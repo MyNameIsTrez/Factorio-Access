@@ -284,7 +284,7 @@ function read_crafting_slot(pindex)
 	local recipe = crafting.lua_recipes[crafting.category][crafting.index]
 	if recipe.valid then
 		if recipe.category == "smelting" then
-			printout(recipe.name .. " can only be crafted by a furnace.", pindex)
+			printout(recipe.name .. " can only be crafted by a furnace", pindex)
 		else
 			printout(
 				recipe.name
@@ -308,7 +308,7 @@ function read_inventory_slot(pindex)
 	if stack.valid_for_read and stack.valid then
 		printout(stack.name .. " x " .. stack.count .. " " .. stack.prototype.subgroup.name, pindex)
 	else
-		printout("Empty Slot", pindex)
+		printout("Empty slot", pindex)
 	end
 end
 
@@ -379,7 +379,7 @@ function scale_stop(position, pindex)
 	if pptx > 50 or ppty > 50 then
 		success = false
 	end
-	printout("Callibration complete", pindex)
+	printout("Calibration complete", pindex)
 	game.speed = 1
 	players[pindex].in_menu = false
 	players[pindex].menu = "none"
@@ -407,7 +407,7 @@ function scale_start(pindex)
 	if #players < 2 then
 		--      game.speed = .1
 	end
-	printout("Calibration Started.  Press space to continue", pindex)
+	printout("Calibration started. Press space to continue", pindex)
 	players[pindex].in_menu = true
 	players[pindex].menu = "prompt"
 	script.on_event("prompt", function(event)
@@ -453,7 +453,7 @@ function scan_index(pindex)
 		or (players[pindex].nearby.category == 4 and next(players[pindex].nearby.buildings) == nil)
 		or (players[pindex].nearby.category == 5 and next(players[pindex].nearby.other) == nil)
 	then
-		printout("No entities found.  Try refreshing with end key.", pindex)
+		printout("No entities found. Try refreshing with the End key", pindex)
 	else
 		local ents = {}
 		if players[pindex].nearby.category == 1 then
@@ -702,7 +702,7 @@ end
 
 function toggle_cursor(pindex)
 	if not players[pindex].cursor then
-		printout("Cursor enabled.", pindex)
+		printout("Cursor enabled", pindex)
 		players[pindex].cursor = true
 	else
 		printout("Cursor disabled", pindex)
@@ -721,10 +721,10 @@ function teleport_to_cursor(pindex)
 			read_tile(pindex)
 			players[pindex].position = table.deepcopy(players[pindex].cursor_pos)
 		else
-			printout("Teleport Failed", pindex)
+			printout("Teleport failed", pindex)
 		end
 	else
-		printout("Tile Occupied", pindex)
+		printout("Tile occupied", pindex)
 	end
 end
 
@@ -1181,7 +1181,7 @@ function initialize(player)
 	}
 	scale_start(index)
 	--   player.insert{name="pipe", count=100}
-	--   printout("Character loaded." .. #game.surfaces,  player.index)
+	--   printout("Character loaded" .. #game.surfaces,  player.index)
 	--   player.insert{name="accumulator", count=10}
 	--   player.insert{name="beacon", count=10}
 	--   player.insert{name="boiler", count=10}
@@ -1323,11 +1323,11 @@ function menu_cursor_up(pindex)
 			players[pindex].technology.category = players[pindex].technology.category - 1
 		end
 		if players[pindex].technology.category == 1 then
-			printout("Researchable ttechnologies", pindex)
+			printout("Researchable technologies", pindex)
 		elseif players[pindex].technology.category == 2 then
 			printout("Locked technologies", pindex)
 		elseif players[pindex].technology.category == 3 then
-			printout("Past Research", pindex)
+			printout("Past research", pindex)
 		end
 	elseif players[pindex].menu == "belt" then
 		if
@@ -1373,7 +1373,7 @@ function menu_cursor_up(pindex)
 					game.get_player(pindex).position,
 					players[pindex].pump.positions[players[pindex].pump.index].position
 				)
-				.. " Facing "
+				.. " facing "
 				.. dir,
 			pindex
 		)
@@ -1454,11 +1454,11 @@ function menu_cursor_down(pindex)
 			players[pindex].technology.category = players[pindex].technology.category + 1
 		end
 		if players[pindex].technology.category == 1 then
-			printout("Researchable ttechnologies", pindex)
+			printout("Researchable technologies", pindex)
 		elseif players[pindex].technology.category == 2 then
 			printout("Locked technologies", pindex)
 		elseif players[pindex].technology.category == 3 then
-			printout("Past Research", pindex)
+			printout("Past research", pindex)
 		end
 	elseif players[pindex].menu == "belt" then
 		if
@@ -1504,7 +1504,7 @@ function menu_cursor_down(pindex)
 					game.get_player(pindex).position,
 					players[pindex].pump.positions[players[pindex].pump.index].position
 				)
-				.. " Facing "
+				.. " facing "
 				.. dir,
 			pindex
 		)
@@ -1791,7 +1791,7 @@ function move(direction, pindex)
 			else
 				teleported = first_player.teleport(new_pos)
 				if not teleported then
-					printout("Teleport Failed", pindex)
+					printout("Teleport failed", pindex)
 				end
 			end
 			players[pindex].position = new_pos
@@ -1799,7 +1799,7 @@ function move(direction, pindex)
 			read_tile(pindex)
 			target(pindex)
 		else
-			printout("Tile Occupied", pindex)
+			printout("Tile occupied", pindex)
 			target(pindex)
 		end
 	else
@@ -1913,7 +1913,7 @@ script.on_event("jump-to-scan", function(event)
 			or (players[pindex].nearby.category == 4 and next(players[pindex].nearby.buildings) == nil)
 			or (players[pindex].nearby.category == 5 and next(players[pindex].nearby.other) == nil)
 		then
-			printout("No entities found.  Try refreshing with end key.", pindex)
+			printout("No entities found. Try refreshing with the End key", pindex)
 		else
 			local ents = {}
 			if players[pindex].nearby.category == 1 then
@@ -2127,7 +2127,7 @@ script.on_event("open-inventory", function(event)
 			end
 		end
 	elseif players[pindex].menu ~= "prompt" then
-		printout("Menu closed.", pindex)
+		printout("Menu closed", pindex)
 		players[pindex].in_menu = false
 		players[pindex].menu = "none"
 	end
@@ -2172,7 +2172,7 @@ script.on_event("switch-menu", function(event)
 				--          end
 			elseif players[pindex].building.recipe_list == nil then
 				if players[pindex].building.sector == (#players[pindex].building.sectors + 1) then
-					printout("Player Inventory", pindex)
+					printout("Player inventory", pindex)
 				else
 					players[pindex].building.sector = 1
 					local inventory = players[pindex].building.sectors[players[pindex].building.sector].inventory
@@ -2190,7 +2190,7 @@ script.on_event("switch-menu", function(event)
 				if players[pindex].building.sector == #players[pindex].building.sectors + 1 then
 					printout("Recipe", pindex)
 				elseif players[pindex].building.sector == #players[pindex].building.sectors + 2 then
-					printout("Player Inventory", pindex)
+					printout("Player inventory", pindex)
 				else
 					players[pindex].building.sector = 1
 					printout(players[pindex].building.sectors[players[pindex].building.sector].name, pindex)
@@ -2205,7 +2205,7 @@ script.on_event("switch-menu", function(event)
 			load_crafting_queue(pindex)
 		elseif players[pindex].menu == "crafting_queue" then
 			players[pindex].menu = "technology"
-			printout("Technology, Researchable Technologies", pindex)
+			printout("Technology, researchable technologies", pindex)
 		elseif players[pindex].menu == "technology" then
 			players[pindex].menu = "inventory"
 			printout("Inventory", pindex)
@@ -2215,7 +2215,7 @@ script.on_event("switch-menu", function(event)
 				printout("Right side" .. #players[pindex].belt.line2, pindex)
 			elseif players[pindex].belt.sector == 2 and players[pindex].belt.line1.valid then
 				players[pindex].belt.sector = 1
-				printout("Left side " .. #players[pindex].belt.line1, pindex)
+				printout("Left side" .. #players[pindex].belt.line1, pindex)
 			end
 		end
 	end
@@ -2234,7 +2234,7 @@ script.on_event("reverse-switch-menu", function(event)
 				else
 					players[pindex].building.sector = #players[pindex].building.sectors + 2
 				end
-				printout("Player's Inventory", pindex)
+				printout("Player's inventory", pindex)
 			elseif players[pindex].building.sector <= #players[pindex].building.sectors then
 				local inventory = players[pindex].building.sectors[players[pindex].building.sector].inventory
 				local len = 0
@@ -2246,18 +2246,18 @@ script.on_event("reverse-switch-menu", function(event)
 				printout(len .. " " .. players[pindex].building.sectors[players[pindex].building.sector].name, pindex)
 			elseif players[pindex].building.recipe_list == nil then
 				if players[pindex].building.sector == (#players[pindex].building.sectors + 1) then
-					printout("Player Inventory", pindex)
+					printout("Player inventory", pindex)
 				end
 			else
 				if players[pindex].building.sector == #players[pindex].building.sectors + 1 then
 					printout("Recipe", pindex)
 				elseif players[pindex].building.sector == #players[pindex].building.sectors + 2 then
-					printout("Player Inventory", pindex)
+					printout("Player inventory", pindex)
 				end
 			end
 		elseif players[pindex].menu == "inventory" then
 			players[pindex].menu = "technology"
-			printout("Technology, Researchable Technologies", pindex)
+			printout("Technology, researchable technologies", pindex)
 		elseif players[pindex].menu == "crafting_queue" then
 			players[pindex].menu = "crafting"
 			printout("Crafting", pindex)
@@ -2346,7 +2346,7 @@ script.on_event("left-click", function(event)
 							)
 						then
 							printout(
-								"This is only a list of what can be crafted by this machine.  Please put items in input to start the crafting process.",
+								"This is only a list of what can be crafted by this machine. Please put items in the Input slot to start the crafting process",
 								pindex
 							)
 						end
@@ -2356,7 +2356,7 @@ script.on_event("left-click", function(event)
 						players[pindex].building.index = 1
 						printout("Select a recipe", pindex)
 					else
-						printout("No recipes unlocked for this building yet.", pindex)
+						printout("No recipes unlocked for this building yet", pindex)
 					end
 				else
 					local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
@@ -2382,9 +2382,9 @@ script.on_event("left-click", function(event)
 				and players[pindex].technology.index <= #techs
 			then
 				if game.get_player(pindex).force.add_research(techs[players[pindex].technology.index]) then
-					printout("Research started.", pindex)
+					printout("Research started", pindex)
 				else
-					printout("Research locked, first complete the prerequisites.", pindex)
+					printout("Research locked; first complete the prerequisites", pindex)
 				end
 			end
 		elseif players[pindex].menu == "pump" then
@@ -2392,7 +2392,7 @@ script.on_event("left-click", function(event)
 			game.get_player(pindex).build_from_cursor({ position = entry.position, direction = entry.direction })
 			players[pindex].in_menu = false
 			players[pindex].menu = "none"
-			printout("Pump placed.", pindex)
+			printout("Pump placed", pindex)
 		end
 	else
 		local stack = game.get_player(pindex).cursor_stack
@@ -2468,7 +2468,7 @@ script.on_event("left-click", function(event)
 				game.get_player(pindex).build_from_cursor(building)
 				read_tile(pindex)
 			else
-				printout("Cannot place that there.", pindex)
+				printout("Cannot place that there", pindex)
 				print(
 					players[pindex].player_direction
 						.. " "
@@ -2508,14 +2508,14 @@ script.on_event("left-click", function(event)
 				end
 			end
 			if #players[pindex].pump.positions == 0 then
-				printout("No available positions.  Try moving closer to water.", pindex)
+				printout("No available positions. Try moving closer to water", pindex)
 			else
 				players[pindex].in_menu = true
 				players[pindex].menu = "pump"
 				printout(
 					"There are "
 						.. #players[pindex].pump.positions
-						.. " possibilities, scroll up and down, then select one to build, or press e to cancel.",
+						.. " possibilities. Scroll up and down, then select one to build, or press the E key to cancel",
 					pindex
 				)
 				table.sort(players[pindex].pump.positions, function(k1, k2)
@@ -2632,7 +2632,7 @@ script.on_event("left-click", function(event)
 					printout("This building has no inventory", pindex)
 				end
 			else
-				printout("Not a building.", pindex)
+				printout("Not a building", pindex)
 			end
 		end
 	end
@@ -2678,10 +2678,10 @@ script.on_event("shift-click", function(event)
 							name = stack.name,
 							count = inserted,
 						})
-						result = "Moved " .. inserted .. " " .. result .. " to player's inventory."
+						result = "Moved " .. inserted .. " " .. result .. " to player's inventory"
 						printout(result, pindex)
 					else
-						printout("Inventory full.", pindex)
+						printout("Inventory full", pindex)
 					end
 				end
 			else
@@ -2704,7 +2704,7 @@ script.on_event("shift-click", function(event)
 								.. players[pindex].building.ent.name
 							printout(result, pindex)
 						else
-							printout("Inventory full.", pindex)
+							printout("Inventory full", pindex)
 						end
 					end
 				end
@@ -2802,7 +2802,7 @@ script.on_event("rotate-building", function(event)
 						by_player = pindex,
 					}
 					if not (ent.rotate(T)) then
-						printout("Cannot rotate this object.", pindex)
+						printout("Cannot rotate this object", pindex)
 						return
 					end
 				else
@@ -2932,7 +2932,7 @@ script.on_event("save", function(event)
 	pindex = event.player_index
 	check_for_player(pindex)
 	game.auto_save("manual")
-	printout("Saving Game, please do not quit yet.", pindex)
+	printout("Saving Game, please do not quit yet", pindex)
 end)
 
 walk_type_speech = {
