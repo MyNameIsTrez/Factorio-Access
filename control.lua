@@ -156,19 +156,13 @@ function read_building_recipe(pindex)
 end
 
 function read_building_slot(pindex)
-	if players[pindex].building.sectors[players[pindex].building.sector].name ~= "Fluid" then
-		stack =
-			players[pindex].building.sectors[players[pindex].building.sector].inventory[players[pindex].building.index]
-		if stack.valid_for_read and stack.valid then
-			printout(stack.name .. " x " .. stack.count, pindex)
-		else
-			printout("Empty slot", pindex)
-		end
-	else
-		local box = players[pindex].building.sectors[players[pindex].building.sector].inventory
-		local capacity = box.get_capacity(players[pindex].building.index)
-		local type = box.get_prototype(players[pindex].building.index).production_type
-		local fluid = box[players[pindex].building.index]
+	local building = players[pindex].building
+	local sector = building.sectors[building.sector]
+	if sector.name == "Fluid" then
+		local box = sector.inventory
+		local capacity = box.get_capacity(building.index)
+		local type = box.get_prototype(building.index).production_type
+		local fluid = box[building.index]
 		--      fluid = {name = "water", amount = 1}
 		local name = "Any"
 		local amount = 0
@@ -178,6 +172,13 @@ function read_building_slot(pindex)
 		end
 
 		printout(name .. " " .. type .. " " .. amount .. "/" .. capacity, pindex)
+	else
+		stack = sector.inventory[building.index]
+		if stack.valid_for_read and stack.valid then
+			printout(stack.name .. " x " .. stack.count, pindex)
+		else
+			printout("Empty slot", pindex)
+		end
 	end
 end
 
