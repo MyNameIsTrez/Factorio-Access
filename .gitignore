@@ -1,0 +1,19 @@
+# Ignore everything by default so stuff can't be added by accident.
+*
+
+# Allow folders.
+!*/
+
+# Allow this gitignore file itself.
+!.gitignore
+
+# Allow files.
+!README.txt
+!CHANGES.txt
+
+!control.lua
+!data.lua
+
+!info.json
+
+!TODO.txt
