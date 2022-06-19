@@ -19,17 +19,17 @@ end
 
 function get_power_string(power)
 	result = ""
-	if power > 1000000000000 then
-		power = power / 1000000000000
+	if power > 1e12 then
+		power = power / 1e12
 		result = result .. string.format(" %.3f Terawatts", power)
-	elseif power > 1000000000 then
-		power = power / 1000000000
+	elseif power > 1e9 then
+		power = power / 1e9
 		result = result .. string.format(" %.3f Gigawatts", power)
-	elseif power > 1000000 then
-		power = power / 1000000
+	elseif power > 1e6 then
+		power = power / 1e6
 		result = result .. string.format(" %.3f Megawatts", power)
-	elseif power > 1000 then
-		power = power / 1000
+	elseif power > 1e3 then
+		power = power / 1e3
 		result = result .. string.format(" %.3f Kilowatts", power)
 	else
 		result = result .. string.format(" %.3f Watts", power)
@@ -949,17 +949,17 @@ function read_tile(pindex)
 			end
 			--         result = result .. " " .. math.floor(power*60)
 			power = power * 60
-			if power > 1000000000000 then
-				power = power / 1000000000000
+			if power > 1e12 then
+				power = power / 1e12
 				result = result .. string.format(" %.3f Terawatts", power)
-			elseif power > 1000000000 then
-				power = power / 1000000000
+			elseif power > 1e9 then
+				power = power / 1e9
 				result = result .. string.format(" %.3f Gigawatts", power)
-			elseif power > 1000000 then
-				power = power / 1000000
+			elseif power > 1e6 then
+				power = power / 1e6
 				result = result .. string.format(" %.3f Megawatts", power)
-			elseif power > 1000 then
-				power = power / 1000
+			elseif power > 1e3 then
+				power = power / 1e3
 				result = result .. string.format(" %.3f Kilowatts", power)
 			else
 				result = result .. string.format(" %.3f Watts", power)
