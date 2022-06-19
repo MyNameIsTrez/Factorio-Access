@@ -280,7 +280,8 @@ function load_crafting_queue(pindex)
 end
 
 function read_crafting_slot(pindex)
-	recipe = players[pindex].crafting.lua_recipes[players[pindex].crafting.category][players[pindex].crafting.index]
+	local crafting = players[pindex].crafting
+	local recipe = crafting.lua_recipes[crafting.category][crafting.index]
 	if recipe.valid then
 		if recipe.category == "smelting" then
 			printout(recipe.name .. " can only be crafted by a furnace.", pindex)
