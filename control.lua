@@ -183,6 +183,7 @@ function read_building_slot(pindex)
 end
 
 function get_recipes(pindex, building)
+	local key
 	if
 		building.name == "assembling-machine-1"
 		or building.name == "assembling-machine-2"
@@ -198,16 +199,16 @@ function get_recipes(pindex, building)
 	else
 		key = "all"
 	end
-	result = {}
 
-	for i, v in pairs(game.get_player(pindex).force.recipes) do
+	local result = {}
+	for _, v in pairs(game.get_player(pindex).force.recipes) do
 		if v.enabled and (v.category == key or key == "all") then
 			if next(result) == nil then
 				table.insert(result, {})
 				table.insert(result[1], v)
 			else
-				check = true
-				for i1, cat in ipairs(result) do
+				local check = true
+				for _, cat in ipairs(result) do
 					if cat[1].group.name == v.group.name then
 						check = false
 						table.insert(cat, v)
@@ -215,11 +216,10 @@ function get_recipes(pindex, building)
 					end
 				end
 				if check then
-					check = true
-					for i1 = 1, #result, 1 do
-						if v.group.name < result[i1][1].group.name then
-							table.insert(result, i1, {})
-							table.insert(result[i1], v)
+					for i = 1, #result, 1 do
+						if v.group.name < result[i][1].group.name then
+							table.insert(result, i, {})
+							table.insert(result[i], v)
 							check = false
 							break
 						end
