@@ -2237,7 +2237,7 @@ script.on_event("switch-menu", function(event)
 			printout("Crafting", pindex)
 		elseif players[pindex].menu == "crafting" then
 			players[pindex].menu = "crafting_queue"
-			printout("Queue", pindex)
+			printout("Crafting queue", pindex)
 			load_crafting_queue(pindex)
 		elseif players[pindex].menu == "crafting_queue" then
 			players[pindex].menu = "technology"
@@ -2302,7 +2302,7 @@ script.on_event("reverse-switch-menu", function(event)
 			printout("Crafting", pindex)
 		elseif players[pindex].menu == "technology" then
 			players[pindex].menu = "crafting_queue"
-			printout("Queue", pindex)
+			printout("Crafting queue", pindex)
 			load_crafting_queue(pindex)
 		elseif players[pindex].menu == "crafting" then
 			players[pindex].menu = "inventory"
