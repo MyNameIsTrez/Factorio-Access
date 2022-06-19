@@ -646,6 +646,8 @@ function direction(pos1, pos2)
 	local dy = y2 - y1
 	local result = math.atan2(dy, dx)
 	--   print(result)
+
+	-- TODO: Refactor
 	if result < math.pi / 8 and result > -math.pi / 8 then
 		return "East"
 	elseif result < 3 * math.pi / 8 and result > math.pi / 8 then
@@ -674,20 +676,24 @@ function distance(pos1, pos2)
 	local y1 = pos1.y
 	local y2 = pos2.y
 	local dy = math.abs(y2 - y1)
+
 	-- if direction(pos1, pos2) == "North" then
 	-- end
-	return math.abs(math.sqrt(dx * dx + dy * dy))
+
+	return math.sqrt(dx * dx + dy * dy)
 end
 
 function index_of_entity(array, value)
 	if next(array) == nil then
 		return nil
 	end
+
 	for i = 1, #array, 1 do
 		if array[i][1].name == value then
 			return i
 		end
 	end
+
 	--   print("No duplicates found")
 	return nil
 end
@@ -696,6 +702,7 @@ function scan_area(x, y, w, h, pindex)
 	local first_player = game.get_player(pindex)
 	local surf = first_player.surface
 	local ents = surf.find_entities_filtered({ area = { { x, y }, { x + w, y + h } } })
+
 	local result = {}
 	local waters = surf.find_tiles_filtered({ area = { { x, y }, { x + w, y + h } }, name = "water" })
 	if next(waters) ~= nil then
@@ -718,10 +725,10 @@ function scan_area(x, y, w, h, pindex)
 			--         result[index] = ents[i]
 		end
 	end
+
 	table.sort(result, function(k1, k2)
 		local pos = game.get_player(pindex).position
 		local ent1
-		local ent2
 		if k1[1].name == "water" then
 			table.sort(k1, function(k3, k4)
 				return distance(pos, k3.position) < distance(pos, k4.position)
@@ -730,6 +737,8 @@ function scan_area(x, y, w, h, pindex)
 		else
 			ent1 = surf.get_closest(pos, k1)
 		end
+
+		local ent2
 		if k2[1].name == "water" then
 			table.sort(k2, function(k3, k4)
 				return distance(pos, k3.position) < distance(pos, k4.position)
@@ -738,6 +747,7 @@ function scan_area(x, y, w, h, pindex)
 		else
 			ent2 = surf.get_closest(pos, k2)
 		end
+
 		return distance(pos, ent1.position) < distance(pos, ent2.position)
 	end)
 
@@ -745,13 +755,15 @@ function scan_area(x, y, w, h, pindex)
 end
 
 function toggle_cursor(pindex)
-	if not players[pindex].cursor then
+	local player = players[pindex]
+
+	if not player.cursor then
 		printout("Cursor enabled", pindex)
-		players[pindex].cursor = true
+		player.cursor = true
 	else
 		printout("Cursor disabled", pindex)
-		players[pindex].cursor = false
-		players[pindex].cursor_pos = offset_position(players[pindex].position, players[pindex].player_direction, 1)
+		player.cursor = false
+		player.cursor_pos = offset_position(player.position, player.player_direction, 1)
 		target(pindex)
 	end
 end
@@ -762,6 +774,7 @@ function teleport_to_cursor(pindex)
 		name = "character",
 		position = players[pindex].cursor_pos,
 	})
+
 	if can_port then
 		local teleported = first_player.teleport(players[pindex].cursor_pos)
 		if teleported then
@@ -785,77 +798,109 @@ end
 function read_tile(pindex)
 	local surf = game.get_player(pindex).surface
 	local result = ""
-	players[pindex].tile.ents = surf.find_entities_filtered({
+	local player = players[pindex]
+	local player_direction = player.player_direction
+	local tile = player.tile
+	local ents = tile.ents
+	local cursor_pos = player.cursor_pos
+	local cursor_x = cursor_pos.x
+	local cursor_y = cursor_pos.y
+
+	local north = defines.direction.north
+	local east = defines.direction.east
+	local south = defines.direction.south
+	local west = defines.direction.west
+
+	local building_direction = player.building_direction
+
+	ents = surf.find_entities_filtered({
 		area = {
-			{ players[pindex].cursor_pos.x - 0.5, players[pindex].cursor_pos.y - 0.5 },
-			{ players[pindex].cursor_pos.x + 0.29, players[pindex].cursor_pos.y + 0.29 },
+			{ cursor_x - 0.5, cursor_y - 0.5 },
+			{ cursor_x + 0.29, cursor_y + 0.29 },
 		},
 	})
-	players[pindex].tile.tile = surf.get_tile(players[pindex].cursor_pos.x, players[pindex].cursor_pos.y).name
 
-	if next(players[pindex].tile.ents) == nil then
-		result = players[pindex].tile.tile
+	tile.tile = surf.get_tile(cursor_x, cursor_y).name
+
+	if next(ents) == nil then
+		result = tile.tile
+
 		local stack = game.get_player(pindex).cursor_stack
+		local prototype = stack.prototype
+		local place_result = prototype.place_result
+
 		if
 			stack.valid_for_read
 			and stack.valid
-			and stack.prototype.place_result ~= nil
-			and stack.prototype.place_result.type == "electric-pole"
+			and place_result ~= nil
+			and place_result.type == "electric-pole"
 		then
-			local ent = stack.prototype.place_result
-			local position = table.deepcopy(players[pindex].cursor_pos)
-			if players[pindex].player_direction == defines.direction.north then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.left_top.y) / 2 - 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.left_top.x) / 2 - 0.5
+			local ent = place_result
+
+			local selection_box = ent.selection_box
+			local left_top = selection_box.left_top
+			local right_bottom = selection_box.right_bottom
+
+			local position = table.deepcopy(cursor_pos)
+			if player_direction == north then
+				if building_direction == 0 or building_direction == 2 then
+					position.y = position.y + math.ceil(2 * left_top.y) / 2 - 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.y = position.y + math.ceil(2 * left_top.x) / 2 - 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.south then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.right_bottom.y) / 2 + 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.right_bottom.x) / 2 + 0.5
+			elseif player_direction == south then
+				if building_direction == 0 or building_direction == 2 then
+					position.y = position.y + math.ceil(2 * right_bottom.y) / 2 + 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.y = position.y + math.ceil(2 * right_bottom.x) / 2 + 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.west then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.left_top.x) / 2 - 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.left_top.y) / 2 - 0.5
+			elseif player_direction == west then
+				if building_direction == 0 or building_direction == 2 then
+					position.x = position.x + math.ceil(2 * left_top.x) / 2 - 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.x = position.x + math.ceil(2 * left_top.y) / 2 - 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.east then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.right_bottom.x) / 2 + 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.right_bottom.y) / 2 + 0.5
+			elseif player_direction == east then
+				if building_direction == 0 or building_direction == 2 then
+					position.x = position.x + math.ceil(2 * right_bottom.x) / 2 + 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.x = position.x + math.ceil(2 * right_bottom.y) / 2 + 0.5
 				end
 			end
+
 			local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
 			local poles = {}
 			for _, v in pairs(dict) do
 				table.insert(poles, v)
 			end
+
 			table.sort(poles, function(k1, k2)
 				return k1.max_wire_distance < k2.max_wire_distance
 			end)
+
 			local check = false
 			for i, pole in ipairs(poles) do
 				local names = {}
 				for i1 = i, #poles, 1 do
 					table.insert(names, poles[i1].name)
 				end
+
 				local T = {
 					position = position,
 					radius = pole.max_wire_distance,
 					name = names,
 				}
+
 				if surf.count_entities_filtered(T) > 0 then
 					check = true
 					break
 				end
+
 				if stack.name == pole.name then
 					break
 				end
 			end
+
 			if check then
 				result = result .. " " .. "connected"
 			else
@@ -864,70 +909,84 @@ function read_tile(pindex)
 		elseif
 			stack.valid_for_read
 			and stack.valid
-			and stack.prototype.place_result ~= nil
-			and stack.prototype.place_result.electric_energy_source_prototype ~= nil
+			and place_result ~= nil
+			and place_result.electric_energy_source_prototype ~= nil
 		then
-			local ent = stack.prototype.place_result
+			local ent = place_result
+
+			local selection_box = ent.selection_box
+			local left_top = selection_box.left_top
+			local right_bottom = selection_box.right_bottom
+
 			local position = center_of_tile(game.get_player(pindex).position)
-			if players[pindex].player_direction == defines.direction.north then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.left_top.y) / 2 - 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.left_top.x) / 2 - 0.5
+			if player_direction == north then
+				if building_direction == 0 or building_direction == 2 then
+					position.y = position.y + math.ceil(2 * left_top.y) / 2 - 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.y = position.y + math.ceil(2 * left_top.x) / 2 - 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.south then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.right_bottom.y) / 2 + 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.y = position.y + math.ceil(2 * ent.selection_box.right_bottom.x) / 2 + 0.5
+			elseif player_direction == south then
+				if building_direction == 0 or building_direction == 2 then
+					position.y = position.y + math.ceil(2 * right_bottom.y) / 2 + 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.y = position.y + math.ceil(2 * right_bottom.x) / 2 + 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.west then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.left_top.x) / 2 - 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.left_top.y) / 2 - 0.5
+			elseif player_direction == west then
+				if building_direction == 0 or building_direction == 2 then
+					position.x = position.x + math.ceil(2 * left_top.x) / 2 - 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.x = position.x + math.ceil(2 * left_top.y) / 2 - 0.5
 				end
-			elseif players[pindex].player_direction == defines.direction.east then
-				if players[pindex].building_direction == 0 or players[pindex].building_direction == 2 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.right_bottom.x) / 2 + 0.5
-				elseif players[pindex].building_direction == 1 or players[pindex].building_direction == 3 then
-					position.x = position.x + math.ceil(2 * ent.selection_box.right_bottom.y) / 2 + 0.5
+			elseif player_direction == east then
+				if building_direction == 0 or building_direction == 2 then
+					position.x = position.x + math.ceil(2 * right_bottom.x) / 2 + 0.5
+				elseif building_direction == 1 or building_direction == 3 then
+					position.x = position.x + math.ceil(2 * right_bottom.y) / 2 + 0.5
 				end
 			end
+
 			local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
 			local poles = {}
-			for i, v in pairs(dict) do
+			for _, v in pairs(dict) do
 				table.insert(poles, v)
 			end
+
 			table.sort(poles, function(k1, k2)
 				return k1.supply_area_distance < k2.supply_area_distance
 			end)
+
 			local check = false
 			for i, pole in ipairs(poles) do
 				local names = {}
 				for i1 = i, #poles, 1 do
 					table.insert(names, poles[i1].name)
 				end
+
+				local supply_area_distance = pole.supply_area_distance
+
 				local area = {
 					left_top = {
-						position.x + ent.selection_box.left_top.x - pole.supply_area_distance,
-						position.y + ent.selection_box.left_top.y - pole.supply_area_distance,
+						position.x + left_top.x - supply_area_distance,
+						position.y + left_top.y - supply_area_distance,
 					},
 					right_bottom = {
-						position.x + ent.selection_box.right_bottom.x + pole.supply_area_distance,
-						position.y + ent.selection_box.right_bottom.y + pole.supply_area_distance,
+						position.x + right_bottom.x + supply_area_distance,
+						position.y + right_bottom.y + supply_area_distance,
 					},
-					orientation = players[pindex].building_direction / 4,
+					orientation = building_direction / 4,
 				}
+
 				local T = {
 					area = area,
 					name = names,
 				}
+
 				if surf.count_entities_filtered(T) > 0 then
 					check = true
 					break
 				end
 			end
+
 			if check then
 				result = result .. " " .. "connected"
 			else
@@ -935,9 +994,10 @@ function read_tile(pindex)
 			end
 		end
 	else
-		local ent = players[pindex].tile.ents[1]
+		local ent = ents[1]
 		result = ent.name
 		result = result .. " " .. ent.type .. " "
+
 		if ent.prototype.is_building then
 			result = result .. "Facing "
 			if ent.direction == 0 then
@@ -950,6 +1010,7 @@ function read_tile(pindex)
 				result = result .. "East "
 			end
 		end
+
 		if ent.prototype.type == "generator" then
 			local power1 = ent.energy_generated_last_tick * 60
 			local power2 = ent.prototype.max_energy_production * 60
@@ -959,14 +1020,15 @@ function read_tile(pindex)
 				result = result .. "Producing " .. get_power_string(power1) .. " "
 			end
 		end
+
 		if ent.prototype.type == "underground-belt" and ent.neighbours ~= nil then
 			result = result
 				.. distance(ent.position, ent.neighbours.position)
 				.. " "
 				.. direction(ent.position, ent.neighbours.position)
 		elseif (ent.prototype.type == "pipe" or ent.prototype.type == "pipe-to-ground") and ent.neighbours ~= nil then
-			for i, v in pairs(ent.neighbours) do
-				for i1, v1 in pairs(v) do
+			for _, v in pairs(ent.neighbours) do
+				for _, v1 in pairs(v) do
 					result = result
 						.. distance(ent.position, v1.position)
 						.. " "
@@ -975,12 +1037,12 @@ function read_tile(pindex)
 			end
 		elseif next(ent.prototype.fluidbox_prototypes) ~= nil then
 			local relative_position = {
-				x = players[pindex].cursor_pos.x - ent.position.x,
-				y = players[pindex].cursor_pos.y - ent.position.y,
+				x = cursor_x - ent.position.x,
+				y = cursor_y - ent.position.y,
 			}
 			local direction = ent.direction / 2
-			for i, box in pairs(ent.prototype.fluidbox_prototypes) do
-				for i1, pipe in pairs(box.pipe_connections) do
+			for _, box in pairs(ent.prototype.fluidbox_prototypes) do
+				for _, pipe in pairs(box.pipe_connections) do
 					local adjusted = get_adjacent_source(
 						ent.prototype.selection_box,
 						pipe.positions[direction + 1],
@@ -995,6 +1057,7 @@ function read_tile(pindex)
 				end
 			end
 		end
+
 		if ent.type == "electric-pole" then
 			result = result .. #ent.neighbours.copper
 			--         if table_size(ent.electric_network_statistics.output_counts) == 0 then
@@ -1029,9 +1092,11 @@ function read_tile(pindex)
 				result = result .. string.format(" %.3f Watts", power)
 			end
 		end
+
 		if ent.prototype.electric_energy_source_prototype ~= nil and not ent.is_connected_to_electric_network() then
 			result = result .. "Not Connected"
 		end
+
 		if ent.drop_position ~= nil then
 			local position = ent.drop_position
 			local direction = ent.direction / 2
@@ -1042,6 +1107,7 @@ function read_tile(pindex)
 					increment = 2
 				end
 			end
+
 			if direction == 0 then
 				position.y = position.y + increment
 			elseif direction == 2 then
@@ -1051,11 +1117,9 @@ function read_tile(pindex)
 			elseif direction == 1 then
 				position.x = position.x - increment
 			end
+
 			--         result = result .. math.floor(position.x) .. " " .. math.floor(position.y) .. " " .. direction .. " "
-			if
-				math.floor(players[pindex].cursor_pos.x) == math.floor(position.x)
-				and math.floor(players[pindex].cursor_pos.y) == math.floor(position.y)
-			then
+			if math.floor(cursor_x) == math.floor(position.x) and math.floor(cursor_y) == math.floor(position.y) then
 				result = result .. " Output " .. increment .. " "
 				if direction == 0 then
 					result = result .. "North "
@@ -1068,10 +1132,12 @@ function read_tile(pindex)
 				end
 			end
 		end
-		--      players[pindex].tile.index = # players[pindex].tile.ents+1
-		players[pindex].tile.index = 2
-		players[pindex].tile.previous = ent
+
+		--      tile.index = # ents+1
+		tile.index = 2
+		tile.previous = ent
 	end
+
 	printout(result, pindex)
 end
 
