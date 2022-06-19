@@ -246,8 +246,9 @@ function get_tile_dimensions(item)
 end
 
 function read_crafting_queue(pindex)
-	if players[pindex].crafting_queue.max ~= 0 then
-		item = players[pindex].crafting_queue.lua_queue[players[pindex].crafting_queue.index]
+	local crafting_queue = players[pindex].crafting_queue
+	if crafting_queue.max ~= 0 then
+		item = crafting_queue.lua_queue[crafting_queue.index]
 		printout(item.recipe .. " x " .. item.count, pindex)
 	else
 		printout("Blank2", pindex)
@@ -255,23 +256,25 @@ function read_crafting_queue(pindex)
 end
 
 function load_crafting_queue(pindex)
-	if players[pindex].crafting_queue.lua_queue ~= nil then
-		players[pindex].crafting_queue.lua_queue = game.get_player(pindex).crafting_queue
-		if players[pindex].crafting_queue.lua_queue ~= nil then
-			delta = players[pindex].crafting_queue.max - #players[pindex].crafting_queue.lua_queue
-			players[pindex].crafting_queue.index = math.max(1, players[pindex].crafting_queue.index - delta)
-			players[pindex].crafting_queue.max = #players[pindex].crafting_queue.lua_queue
+	local crafting_queue = players[pindex].crafting_queue
+	local lua_queue = crafting_queue.lua_queue
+	if lua_queue ~= nil then
+		lua_queue = game.get_player(pindex).crafting_queue
+		if lua_queue ~= nil then
+			local delta = crafting_queue.max - #lua_queue
+			crafting_queue.index = math.max(1, crafting_queue.index - delta)
+			crafting_queue.max = #lua_queue
 		else
-			players[pindex].crafting_queue.index = 1
-			players[pindex].crafting_queue.max = 0
+			crafting_queue.index = 1
+			crafting_queue.max = 0
 		end
 	else
-		players[pindex].crafting_queue.lua_queue = game.get_player(pindex).crafting_queue
-		players[pindex].crafting_queue.index = 1
-		if players[pindex].crafting_queue.lua_queue ~= nil then
-			players[pindex].crafting_queue.max = #players[pindex].crafting_queue.lua_queue
+		lua_queue = game.get_player(pindex).crafting_queue
+		crafting_queue.index = 1
+		if lua_queue ~= nil then
+			crafting_queue.max = #lua_queue
 		else
-			players[pindex].crafting_queue.max = 0
+			crafting_queue.max = 0
 		end
 	end
 end
