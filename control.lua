@@ -471,49 +471,57 @@ function repeat_last_spoken(pindex)
 end
 
 function scan_index(pindex)
+	local player = players[pindex]
+	local nearby = player.nearby
+	local category = nearby.category
+
 	if
-		(players[pindex].nearby.category == 1 and next(players[pindex].nearby.ents) == nil)
-		or (players[pindex].nearby.category == 2 and next(players[pindex].nearby.resources) == nil)
-		or (players[pindex].nearby.category == 3 and next(players[pindex].nearby.containers) == nil)
-		or (players[pindex].nearby.category == 4 and next(players[pindex].nearby.buildings) == nil)
-		or (players[pindex].nearby.category == 5 and next(players[pindex].nearby.other) == nil)
+		(category == 1 and next(nearby.ents) == nil)
+		or (category == 2 and next(nearby.resources) == nil)
+		or (category == 3 and next(nearby.containers) == nil)
+		or (category == 4 and next(nearby.buildings) == nil)
+		or (category == 5 and next(nearby.other) == nil)
 	then
 		printout("No entities found. Try refreshing with the End key", pindex)
 	else
 		local ents = {}
-		if players[pindex].nearby.category == 1 then
-			ents = players[pindex].nearby.ents
-		elseif players[pindex].nearby.category == 2 then
-			ents = players[pindex].nearby.resources
-		elseif players[pindex].nearby.category == 3 then
-			ents = players[pindex].nearby.containers
-		elseif players[pindex].nearby.category == 4 then
-			ents = players[pindex].nearby.buildings
-		elseif players[pindex].nearby.category == 5 then
-			ents = players[pindex].nearby.other
+		if category == 1 then
+			ents = nearby.ents
+		elseif category == 2 then
+			ents = nearby.resources
+		elseif category == 3 then
+			ents = nearby.containers
+		elseif category == 4 then
+			ents = nearby.buildings
+		elseif category == 5 then
+			ents = nearby.other
 		end
+
 		local ent
-		if ents[players[pindex].nearby.index][1].name == "water" then
-			table.sort(ents[players[pindex].nearby.index], function(k1, k2)
+		if ents[nearby.index][1].name == "water" then
+			table.sort(ents[nearby.index], function(k1, k2)
 				local pos = game.get_player(pindex).position
 				return distance(pos, k1.position) < distance(pos, k2.position)
 			end)
-			ent = ents[players[pindex].nearby.index][1]
+
+			ent = ents[nearby.index][1]
 			while not ent.valid do
-				table.remove(ents[players[pindex].nearby.index], 1)
-				ent = ents[players[pindex].nearby.index][1]
+				table.remove(ents[nearby.index], 1)
+				ent = ents[nearby.index][1]
 			end
 		else
-			for i, dud in ipairs(ents[players[pindex].nearby.index]) do
+			for i, dud in ipairs(ents[nearby.index]) do
 				if not dud.valid then
-					table.remove(ents[players[pindex].nearby.index], i)
+					table.remove(ents[nearby.index], i)
 				end
 			end
+
 			ent = game.get_player(pindex).surface.get_closest(
 				game.get_player(pindex).position,
-				ents[players[pindex].nearby.index]
+				ents[nearby.index]
 			)
 		end
+
 		printout(
 			ent.name
 				.. " "
