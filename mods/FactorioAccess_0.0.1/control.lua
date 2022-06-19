@@ -125,7 +125,7 @@ function read_building_recipe(pindex)
 		if recipe.valid == true then
 			printout(recipe.name .. " " .. recipe.category .. " " .. recipe.group.name .. " " .. recipe.subgroup.name, pindex)
 		else
-			printout("Blank", pindex)
+			printout("Blank1", pindex)
 		end
 	else
 		local recipe = players[pindex].building.recipe
@@ -232,7 +232,7 @@ function read_crafting_queue(pindex)
 		item = players[pindex].crafting_queue.lua_queue[players[pindex].crafting_queue.index]
 		printout(item.recipe .. " x " .. item.count, pindex)
 	else
-		printout("Blank", pindex)
+		printout("Blank2", pindex)
 	end
 end
 
@@ -269,7 +269,7 @@ function read_crafting_slot(pindex)
 				, pindex)
 		end
 	else
-		printout("Blank", pindex)
+		printout("Blank3", pindex)
 	end
 end
 
@@ -1205,7 +1205,7 @@ function menu_cursor_up(pindex)
 		if players[pindex].building.sector <= #players[pindex].building.sectors then
 			if players[pindex].building.sectors[players[pindex].building.sector].inventory == nil or
 				#players[pindex].building.sectors[players[pindex].building.sector].inventory < 1 then
-				printout("blank", pindex)
+				printout("Blank4", pindex)
 				return
 			end
 			if #players[pindex].building.sectors[players[pindex].building.sector].inventory > 10 then
@@ -1311,7 +1311,7 @@ function menu_cursor_down(pindex)
 		if players[pindex].building.sector <= #players[pindex].building.sectors then
 			if players[pindex].building.sectors[players[pindex].building.sector].inventory == nil or
 				#players[pindex].building.sectors[players[pindex].building.sector].inventory < 1 then
-				printout("blank", pindex)
+				printout("Blank5", pindex)
 				return
 			end
 
@@ -1423,7 +1423,7 @@ function menu_cursor_left(pindex)
 		if players[pindex].building.sector <= #players[pindex].building.sectors then
 			if players[pindex].building.sectors[players[pindex].building.sector].inventory == nil or
 				#players[pindex].building.sectors[players[pindex].building.sector].inventory < 1 then
-				printout("blank", pindex)
+				printout("Blank6", pindex)
 				return
 			end
 
@@ -1516,7 +1516,7 @@ function menu_cursor_right(pindex)
 		if players[pindex].building.sector <= #players[pindex].building.sectors then
 			if players[pindex].building.sectors[players[pindex].building.sector].inventory == nil or
 				#players[pindex].building.sectors[players[pindex].building.sector].inventory < 1 then
-				printout("blank", pindex)
+				printout("Blank7", pindex)
 				return
 			end
 
@@ -2812,7 +2812,7 @@ script.on_event("item-info", function(event)
 				end)
 				game.get_player(pindex).request_translation(stack.prototype.localised_description)
 			else
-				printout("Blank", pindex)
+				printout("Blank8", pindex)
 			end
 
 		elseif players[pindex].menu == "technology" then
