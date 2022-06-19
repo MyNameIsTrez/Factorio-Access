@@ -17,7 +17,10 @@ print(
 )
 
 function center_of_tile(pos)
-	return { x = math.floor(pos.x) + 0.5, y = math.floor(pos.y) + 0.5 }
+	return {
+		x = math.floor(pos.x) + 0.5,
+		y = math.floor(pos.y) + 0.5,
+	}
 end
 
 function get_power_string(power)
@@ -350,39 +353,55 @@ end
 
 function move_cursor_map(position, pindex)
 	local player = game.get_player(pindex)
+	local x_diff = position.x - player.position.x
+	local y_diff = position.y - player.position.y
+	local scale = players[pindex].scale
+	local resolution = players[pindex].resolution
+
 	move_cursor(
-		(position.x - player.position.x) * players[pindex].scale + (players[pindex].resolution.width / 2),
-		(position.y - player.position.y) * players[pindex].scale + (players[pindex].resolution.height / 2),
+		x_diff * scale + (resolution.width / 2),
+		y_diff * scale + (resolution.height / 2),
 		pindex
 	)
 end
 
 function move_cursor(x, y, pindex)
-	if x >= 0 and y >= 0 and x < players[pindex].resolution.width and y < players[pindex].resolution.height then
+	local resolution = players[pindex].resolution
+	if x >= 0 and y >= 0 and x < resolution.width and y < resolution.height then
 		print("setCursor " .. math.ceil(x) .. "," .. math.ceil(y))
 	end
 end
 
 function scale_stop(position, pindex)
 	local player = game.get_player(pindex)
-	move_cursor(players[pindex].resolution.width / 2, players[pindex].resolution.height / 2, pindex)
+
+	local resolution = players[pindex].resolution
+	move_cursor(resolution.width / 2, resolution.height / 2, pindex)
+
 	local x1 = player.position.x
 	local y1 = player.position.y
 	local x2 = position.x
 	local y2 = position.y
 	local dx = math.abs(x2 - x1)
 	local dy = math.abs(y2 - y1)
-	local pptx = players[pindex].resolution.width / dx / 2
-	local ppty = players[pindex].resolution.height / dy / 2
+
+	local pptx = resolution.width / dx / 2
 	players[pindex].scale = pptx
+
+	local ppty = resolution.height / dy / 2
+
 	local success = true
 	if pptx > 50 or ppty > 50 then
 		success = false
 	end
+
 	printout("Calibration complete", pindex)
+
 	game.speed = 1
+
 	players[pindex].in_menu = false
 	players[pindex].menu = "none"
+
 	local check = true
 	for i = 1, #players, 1 do
 		if players[i].menu == "prompt" then
@@ -392,6 +411,7 @@ function scale_stop(position, pindex)
 	if check then
 		script.on_event("prompt", nil)
 	end
+
 	if not success then
 		scale_start(pindex)
 	end
@@ -400,16 +420,20 @@ end
 function scale_start(pindex)
 	local player = game.get_player(pindex)
 	players[pindex].resolution = player.display_resolution
-	print("resx=" .. players[pindex].resolution.width)
-	print("resy=" .. players[pindex].resolution.height)
+
+	local resolution = players[pindex].resolution
+	print("resx=" .. resolution.width)
+	print("resy=" .. resolution.height)
 
 	move_cursor(0, 0, pindex)
 	if #players < 2 then
 		--      game.speed = .1
 	end
+
 	printout("Calibration started. Press space to continue", pindex)
 	players[pindex].in_menu = true
 	players[pindex].menu = "prompt"
+
 	script.on_event("prompt", function(event)
 		if event.player_index == pindex then
 			scale_stop(event.cursor_position, pindex)
@@ -418,14 +442,15 @@ function scale_start(pindex)
 end
 
 function tile_cycle(pindex)
-	players[pindex].tile.index = players[pindex].tile.index + 1
+	local tile = players[pindex].tile
+	tile.index = tile.index + 1
 
-	if players[pindex].tile.index > #players[pindex].tile.ents + 1 then
-		players[pindex].tile.index = 1
-		printout(players[pindex].tile.tile, pindex)
+	if tile.index > #tile.ents + 1 then
+		tile.index = 1
+		printout(tile.tile, pindex)
 	else
-		if players[pindex].tile.ents[players[pindex].tile.index - 1].valid then
-			printout(players[pindex].tile.ents[players[pindex].tile.index - 1].name, pindex)
+		if tile.ents[tile.index - 1].valid then
+			printout(tile.ents[tile.index - 1].name, pindex)
 		end
 	end
 end
@@ -714,7 +739,10 @@ end
 
 function teleport_to_cursor(pindex)
 	local first_player = game.get_player(pindex)
-	local can_port = first_player.surface.can_place_entity({ name = "character", position = players[pindex].cursor_pos })
+	local can_port = first_player.surface.can_place_entity({
+		name = "character",
+		position = players[pindex].cursor_pos,
+	})
 	if can_port then
 		local teleported = first_player.teleport(players[pindex].cursor_pos)
 		if teleported then
