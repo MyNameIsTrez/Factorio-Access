@@ -18,23 +18,17 @@ function center_of_tile(pos)
 end
 
 function get_power_string(power)
-	result = ""
 	if power > 1e12 then
-		power = power / 1e12
-		result = result .. string.format(" %.3f Terawatts", power)
+		return string.format(" %.3f Terawatts", power / 1e12)
 	elseif power > 1e9 then
-		power = power / 1e9
-		result = result .. string.format(" %.3f Gigawatts", power)
+		return string.format(" %.3f Gigawatts", power / 1e9)
 	elseif power > 1e6 then
-		power = power / 1e6
-		result = result .. string.format(" %.3f Megawatts", power)
+		return string.format(" %.3f Megawatts", power / 1e6)
 	elseif power > 1e3 then
-		power = power / 1e3
-		result = result .. string.format(" %.3f Kilowatts", power)
+		return string.format(" %.3f Kilowatts", power / 1e3)
 	else
-		result = result .. string.format(" %.3f Watts", power)
+		return string.format(" %.3f Watts", power)
 	end
-	return result
 end
 
 function get_adjacent_source(box, pos, dir)
