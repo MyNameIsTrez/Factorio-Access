@@ -2119,165 +2119,23 @@ script.on_event("open-inventory", function(event)
 	end
 end)
 
-script.on_event("quickbar-1", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(1, pindex)
-	end
-end)
+for k = 1, 10 do
+	script.on_event("quickbar-" .. k, function(event)
+		pindex = event.player_index
+		check_for_player(pindex)
+		if not players[pindex].in_menu then
+			read_quick_bar(k, pindex)
+		end
+	end)
 
-script.on_event("quickbar-2", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(2, pindex)
-	end
-end)
-
-script.on_event("quickbar-3", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(3, pindex)
-	end
-end)
-
-script.on_event("quickbar-4", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(4, pindex)
-	end
-end)
-
-script.on_event("quickbar-5", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(5, pindex)
-	end
-end)
-
-script.on_event("quickbar-6", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(6, pindex)
-	end
-end)
-
-script.on_event("quickbar-7", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(7, pindex)
-	end
-end)
-
-script.on_event("quickbar-8", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(8, pindex)
-	end
-end)
-
-script.on_event("quickbar-9", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(9, pindex)
-	end
-end)
-
-script.on_event("quickbar-10", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if not players[pindex].in_menu then
-		read_quick_bar(10, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-1", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(1, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-2", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(2, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-3", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(3, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-4", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(4, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-5", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(5, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-6", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(6, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-7", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(7, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-8", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(8, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-9", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(9, pindex)
-	end
-end)
-
-script.on_event("set-quickbar-10", function(event)
-	pindex = event.player_index
-	check_for_player(pindex)
-	if players[pindex].menu == "inventory" then
-		set_quick_bar(10, pindex)
-	end
-end)
+	script.on_event("set-quickbar-" .. k, function(event)
+		pindex = event.player_index
+		check_for_player(pindex)
+		if players[pindex].menu == "inventory" then
+			set_quick_bar(k, pindex)
+		end
+	end)
+end
 
 script.on_event("switch-menu", function(event)
 	pindex = event.player_index
