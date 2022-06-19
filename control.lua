@@ -86,28 +86,30 @@ function read_technology_slot(pindex)
 end
 
 function populate_categories(pindex)
-	players[pindex].nearby.resources = {}
-	players[pindex].nearby.containers = {}
-	players[pindex].nearby.buildings = {}
-	players[pindex].nearby.other = {}
+	local nearby = players[pindex].nearby
+	nearby.resources = {}
+	nearby.containers = {}
+	nearby.buildings = {}
+	nearby.other = {}
 
-	for i, ent in ipairs(players[pindex].nearby.ents) do
+	for _, ent in ipairs(nearby.ents) do
+		-- TODO: Why is it ent[1] and not just ent?
 		if ent[1].name == "water" then
-			table.insert(players[pindex].nearby.resources, ent)
+			table.insert(nearby.resources, ent)
 		elseif ent[1].type == "resource" or ent[1].type == "tree" then
-			table.insert(players[pindex].nearby.resources, ent)
+			table.insert(nearby.resources, ent)
 		elseif ent[1].type == "container" then
-			table.insert(players[pindex].nearby.containers, ent)
+			table.insert(nearby.containers, ent)
 		elseif ent[1].type == "simple-entity" or ent[1].type == "simple-entity-with-owner" then
-			table.insert(players[pindex].nearby.other, ent)
+			table.insert(nearby.other, ent)
 		elseif ent[1].prototype.is_building then
-			table.insert(players[pindex].nearby.buildings, ent)
+			table.insert(nearby.buildings, ent)
 		end
 	end
 end
 
 function read_belt_slot(pindex)
-	local stack = nil
+	local stack
 	if players[pindex].belt.sector == 1 then
 		stack = players[pindex].belt.line1[players[pindex].belt.index]
 	elseif players[pindex].belt.sector == 2 then
@@ -450,7 +452,7 @@ function scan_index(pindex)
 		elseif players[pindex].nearby.category == 5 then
 			ents = players[pindex].nearby.other
 		end
-		local ent = nil
+		local ent
 		if ents[players[pindex].nearby.index][1].name == "water" then
 			table.sort(ents[players[pindex].nearby.index], function(k1, k2)
 				local pos = game.get_player(pindex).position
@@ -659,8 +661,8 @@ function scan_area(x, y, w, h, pindex)
 	end
 	table.sort(result, function(k1, k2)
 		local pos = game.get_player(pindex).position
-		local ent1 = nil
-		local ent2 = nil
+		local ent1
+		local ent2
 		if k1[1].name == "water" then
 			table.sort(k1, function(k3, k4)
 				return distance(pos, k3.position) < distance(pos, k4.position)
@@ -1913,7 +1915,7 @@ script.on_event("jump-to-scan", function(event)
 			elseif players[pindex].nearby.category == 5 then
 				ents = players[pindex].nearby.other
 			end
-			local ent = nil
+			local ent
 			if ents[players[pindex].nearby.index][1].name == "water" then
 				table.sort(ents[players[pindex].nearby.index], function(k1, k2)
 					local pos = game.get_player(pindex).position
