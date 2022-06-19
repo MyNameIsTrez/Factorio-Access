@@ -848,11 +848,9 @@ function read_tile(pindex)
 		result = tile.tile
 
 		local stack = game.get_player(pindex).cursor_stack
-		local prototype = stack.prototype
-		local place_result = prototype.place_result
 
-		if stack.valid_for_read and stack.valid and place_result ~= nil then
-			local ent = place_result
+		if stack.valid_for_read and stack.valid and stack.prototype.place_result ~= nil then
+			local ent = stack.prototype.place_result
 
 			if ent.type == "electric-pole" then
 				local position = table.deepcopy(cursor_pos)
@@ -2473,6 +2471,7 @@ script.on_event("left-click", function(event)
 			and stack.prototype.place_result ~= nil
 			and stack.name ~= "offshore-pump"
 		then
+			-- TODO: This places a prototype, except for offshore pumps. Turn this into a subfunction.
 			local ent = stack.prototype.place_result
 			local position = { x, y }
 
@@ -2557,6 +2556,7 @@ script.on_event("left-click", function(event)
 				)
 			end
 		elseif stack.valid and stack.valid_for_read and stack.name == "offshore-pump" then
+			-- TODO: This only places offshore pumps. Turn this into a subfunction.
 			local ent = stack.prototype.place_result
 			players[pindex].pump.positions = {}
 			local initial_position = game.get_player(pindex).position
@@ -2600,6 +2600,7 @@ script.on_event("left-click", function(event)
 			and players[pindex].tile.index > 1
 			and players[pindex].tile.ents[1].valid
 		then
+			-- TODO: When is this reached? Turn this into a subfunction.
 			local ent = players[pindex].tile.ents[1]
 			if ent.operable and ent.prototype.is_building then
 				if ent.prototype.subgroup.name == "belt" then
