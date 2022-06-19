@@ -358,11 +358,7 @@ function move_cursor_map(position, pindex)
 	local scale = players[pindex].scale
 	local resolution = players[pindex].resolution
 
-	move_cursor(
-		x_diff * scale + (resolution.width / 2),
-		y_diff * scale + (resolution.height / 2),
-		pindex
-	)
+	move_cursor(x_diff * scale + (resolution.width / 2), y_diff * scale + (resolution.height / 2), pindex)
 end
 
 function move_cursor(x, y, pindex)
@@ -516,10 +512,7 @@ function scan_index(pindex)
 				end
 			end
 
-			ent = game.get_player(pindex).surface.get_closest(
-				game.get_player(pindex).position,
-				ents[nearby.index]
-			)
+			ent = game.get_player(pindex).surface.get_closest(game.get_player(pindex).position, ents[nearby.index])
 		end
 
 		printout(
@@ -534,87 +527,104 @@ function scan_index(pindex)
 end
 
 function scan_down(pindex)
+	local player = players[pindex]
+	local nearby = player.nearby
+	local category = nearby.category
+
 	if
-		(players[pindex].nearby.category == 1 and players[pindex].nearby.index < #players[pindex].nearby.ents)
-		or (players[pindex].nearby.category == 2 and players[pindex].nearby.index < #players[pindex].nearby.resources)
-		or (players[pindex].nearby.category == 3 and players[pindex].nearby.index < #players[pindex].nearby.containers)
-		or (players[pindex].nearby.category == 4 and players[pindex].nearby.index < #players[pindex].nearby.buildings)
-		or (players[pindex].nearby.category == 5 and players[pindex].nearby.index < #players[pindex].nearby.other)
+		(category == 1 and nearby.index < #nearby.ents)
+		or (category == 2 and nearby.index < #nearby.resources)
+		or (category == 3 and nearby.index < #nearby.containers)
+		or (category == 4 and nearby.index < #nearby.buildings)
+		or (category == 5 and nearby.index < #nearby.other)
 	then
-		players[pindex].nearby.index = players[pindex].nearby.index + 1
+		nearby.index = nearby.index + 1
 	end
+
 	if not (pcall(function()
 		scan_index(pindex)
 	end)) then
-		if players[pindex].nearby.category == 1 then
-			table.remove(players[pindex].nearby.ents, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 2 then
-			table.remove(players[pindex].nearby.resources, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 3 then
-			table.remove(players[pindex].nearby.containers, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 4 then
-			table.remove(players[pindex].nearby.buildings, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 5 then
-			table.remove(players[pindex].nearby.other, players[pindex].nearby.index)
+		if category == 1 then
+			table.remove(nearby.ents, nearby.index)
+		elseif category == 2 then
+			table.remove(nearby.resources, nearby.index)
+		elseif category == 3 then
+			table.remove(nearby.containers, nearby.index)
+		elseif category == 4 then
+			table.remove(nearby.buildings, nearby.index)
+		elseif category == 5 then
+			table.remove(nearby.other, nearby.index)
 		end
+
 		scan_up(pindex)
 		scan_down(pindex)
 	end
 end
 
 function scan_up(pindex)
-	if players[pindex].nearby.index > 1 then
-		players[pindex].nearby.index = players[pindex].nearby.index - 1
+	local player = players[pindex]
+	local nearby = player.nearby
+	local category = nearby.category
+
+	if nearby.index > 1 then
+		nearby.index = nearby.index - 1
 	end
+
 	if not (pcall(function()
 		scan_index(pindex)
 	end)) then
-		if players[pindex].nearby.category == 1 then
-			table.remove(players[pindex].nearby.ents, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 2 then
-			table.remove(players[pindex].nearby.resources, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 3 then
-			table.remove(players[pindex].nearby.containers, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 4 then
-			table.remove(players[pindex].nearby.buildings, players[pindex].nearby.index)
-		elseif players[pindex].nearby.category == 5 then
-			table.remove(players[pindex].nearby.other, players[pindex].nearby.index)
+		if category == 1 then
+			table.remove(nearby.ents, nearby.index)
+		elseif category == 2 then
+			table.remove(nearby.resources, nearby.index)
+		elseif category == 3 then
+			table.remove(nearby.containers, nearby.index)
+		elseif category == 4 then
+			table.remove(nearby.buildings, nearby.index)
+		elseif category == 5 then
+			table.remove(nearby.other, nearby.index)
 		end
+
 		scan_down(pindex)
 		scan_up(pindex)
 	end
 end
 
 function scan_middle(pindex)
+	local player = players[pindex]
+	local nearby = player.nearby
+	local category = nearby.category
+
 	local ents = {}
-	if players[pindex].nearby.category == 1 then
-		ents = players[pindex].nearby.ents
-	elseif players[pindex].nearby.category == 2 then
-		ents = players[pindex].nearby.resources
-	elseif players[pindex].nearby.category == 3 then
-		ents = players[pindex].nearby.containers
-	elseif players[pindex].nearby.category == 4 then
-		ents = players[pindex].nearby.buildings
-	elseif players[pindex].nearby.category == 5 then
-		ents = players[pindex].nearby.other
+	if category == 1 then
+		ents = nearby.ents
+	elseif category == 2 then
+		ents = nearby.resources
+	elseif category == 3 then
+		ents = nearby.containers
+	elseif category == 4 then
+		ents = nearby.buildings
+	elseif category == 5 then
+		ents = nearby.other
 	end
 
-	if players[pindex].nearby.index < 1 then
-		players[pindex].nearby.index = 1
-	elseif players[pindex].nearby.index > #ents then
-		players[pindex].nearby.index = #ents
+	if nearby.index < 1 then
+		nearby.index = 1
+	elseif nearby.index > #ents then
+		nearby.index = #ents
 	end
 
 	if not (pcall(function()
 		scan_index(pindex)
 	end)) then
-		table.remove(ents, players[pindex].nearby.index)
+		table.remove(ents, nearby.index)
 		scan_middle(pindex)
 	end
 end
 
 function rescan(pindex)
 	players[pindex].nearby.index = 1
+
 	local first_player = game.get_player(pindex)
 	players[pindex].nearby.ents = scan_area(
 		math.floor(first_player.position.x) - 100,
@@ -623,6 +633,7 @@ function rescan(pindex)
 		200,
 		pindex
 	)
+
 	populate_categories(pindex)
 end
 
