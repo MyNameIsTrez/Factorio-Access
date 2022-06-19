@@ -795,21 +795,43 @@ function jump_to_player(pindex)
 	read_coords(pindex)
 end
 
+function update_position(position, player_direction, building_direction, selection_box)
+	if player_direction == defines.direction.north then
+		if building_direction == 0 or building_direction == 2 then
+			position.y = position.y + math.ceil(2 * selection_box.left_top.y) / 2 - 0.5
+		elseif building_direction == 1 or building_direction == 3 then
+			position.y = position.y + math.ceil(2 * selection_box.left_top.x) / 2 - 0.5
+		end
+	elseif player_direction == defines.direction.south then
+		if building_direction == 0 or building_direction == 2 then
+			position.y = position.y + math.ceil(2 * selection_box.right_bottom.y) / 2 + 0.5
+		elseif building_direction == 1 or building_direction == 3 then
+			position.y = position.y + math.ceil(2 * selection_box.right_bottom.x) / 2 + 0.5
+		end
+	elseif player_direction == defines.direction.west then
+		if building_direction == 0 or building_direction == 2 then
+			position.x = position.x + math.ceil(2 * selection_box.left_top.x) / 2 - 0.5
+		elseif building_direction == 1 or building_direction == 3 then
+			position.x = position.x + math.ceil(2 * selection_box.left_top.y) / 2 - 0.5
+		end
+	elseif player_direction == defines.direction.east then
+		if building_direction == 0 or building_direction == 2 then
+			position.x = position.x + math.ceil(2 * selection_box.right_bottom.x) / 2 + 0.5
+		elseif building_direction == 1 or building_direction == 3 then
+			position.x = position.x + math.ceil(2 * selection_box.right_bottom.y) / 2 + 0.5
+		end
+	end
+end
+
 function read_tile(pindex)
 	local surf = game.get_player(pindex).surface
 	local result = ""
 	local player = players[pindex]
-	local player_direction = player.player_direction
 	local tile = player.tile
 	local ents = tile.ents
 	local cursor_pos = player.cursor_pos
 	local cursor_x = cursor_pos.x
 	local cursor_y = cursor_pos.y
-
-	local north = defines.direction.north
-	local east = defines.direction.east
-	local south = defines.direction.south
-	local west = defines.direction.west
 
 	local building_direction = player.building_direction
 
@@ -829,168 +851,104 @@ function read_tile(pindex)
 		local prototype = stack.prototype
 		local place_result = prototype.place_result
 
-		if
-			stack.valid_for_read
-			and stack.valid
-			and place_result ~= nil
-			and place_result.type == "electric-pole"
-		then
+		if stack.valid_for_read and stack.valid and place_result ~= nil then
 			local ent = place_result
 
-			local selection_box = ent.selection_box
-			local left_top = selection_box.left_top
-			local right_bottom = selection_box.right_bottom
+			if ent.type == "electric-pole" then
+				local position = table.deepcopy(cursor_pos)
 
-			local position = table.deepcopy(cursor_pos)
-			if player_direction == north then
-				if building_direction == 0 or building_direction == 2 then
-					position.y = position.y + math.ceil(2 * left_top.y) / 2 - 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.y = position.y + math.ceil(2 * left_top.x) / 2 - 0.5
-				end
-			elseif player_direction == south then
-				if building_direction == 0 or building_direction == 2 then
-					position.y = position.y + math.ceil(2 * right_bottom.y) / 2 + 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.y = position.y + math.ceil(2 * right_bottom.x) / 2 + 0.5
-				end
-			elseif player_direction == west then
-				if building_direction == 0 or building_direction == 2 then
-					position.x = position.x + math.ceil(2 * left_top.x) / 2 - 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.x = position.x + math.ceil(2 * left_top.y) / 2 - 0.5
-				end
-			elseif player_direction == east then
-				if building_direction == 0 or building_direction == 2 then
-					position.x = position.x + math.ceil(2 * right_bottom.x) / 2 + 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.x = position.x + math.ceil(2 * right_bottom.y) / 2 + 0.5
-				end
-			end
+				update_position(position, player.player_direction, building_direction, ent.selection_box)
 
-			local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
-			local poles = {}
-			for _, v in pairs(dict) do
-				table.insert(poles, v)
-			end
-
-			table.sort(poles, function(k1, k2)
-				return k1.max_wire_distance < k2.max_wire_distance
-			end)
-
-			local check = false
-			for i, pole in ipairs(poles) do
-				local names = {}
-				for i1 = i, #poles, 1 do
-					table.insert(names, poles[i1].name)
+				local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
+				local poles = {}
+				for _, v in pairs(dict) do
+					table.insert(poles, v)
 				end
 
-				local T = {
-					position = position,
-					radius = pole.max_wire_distance,
-					name = names,
-				}
+				table.sort(poles, function(k1, k2)
+					return k1.max_wire_distance < k2.max_wire_distance
+				end)
 
-				if surf.count_entities_filtered(T) > 0 then
-					check = true
-					break
+				local check = false
+				for i, pole in ipairs(poles) do
+					local names = {}
+					for i1 = i, #poles, 1 do
+						table.insert(names, poles[i1].name)
+					end
+
+					local T = {
+						position = position,
+						radius = pole.max_wire_distance,
+						name = names,
+					}
+
+					if surf.count_entities_filtered(T) > 0 then
+						check = true
+						break
+					end
+
+					if stack.name == pole.name then
+						break
+					end
 				end
 
-				if stack.name == pole.name then
-					break
+				if check then
+					result = result .. " " .. "connected"
+				else
+					result = result .. "Not Connected"
 				end
-			end
+			elseif ent.electric_energy_source_prototype ~= nil then
+				local position = center_of_tile(game.get_player(pindex).position)
 
-			if check then
-				result = result .. " " .. "connected"
-			else
-				result = result .. "Not Connected"
-			end
-		elseif
-			stack.valid_for_read
-			and stack.valid
-			and place_result ~= nil
-			and place_result.electric_energy_source_prototype ~= nil
-		then
-			local ent = place_result
+				update_position(position, player.player_direction, building_direction, ent.selection_box)
 
-			local selection_box = ent.selection_box
-			local left_top = selection_box.left_top
-			local right_bottom = selection_box.right_bottom
-
-			local position = center_of_tile(game.get_player(pindex).position)
-			if player_direction == north then
-				if building_direction == 0 or building_direction == 2 then
-					position.y = position.y + math.ceil(2 * left_top.y) / 2 - 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.y = position.y + math.ceil(2 * left_top.x) / 2 - 0.5
-				end
-			elseif player_direction == south then
-				if building_direction == 0 or building_direction == 2 then
-					position.y = position.y + math.ceil(2 * right_bottom.y) / 2 + 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.y = position.y + math.ceil(2 * right_bottom.x) / 2 + 0.5
-				end
-			elseif player_direction == west then
-				if building_direction == 0 or building_direction == 2 then
-					position.x = position.x + math.ceil(2 * left_top.x) / 2 - 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.x = position.x + math.ceil(2 * left_top.y) / 2 - 0.5
-				end
-			elseif player_direction == east then
-				if building_direction == 0 or building_direction == 2 then
-					position.x = position.x + math.ceil(2 * right_bottom.x) / 2 + 0.5
-				elseif building_direction == 1 or building_direction == 3 then
-					position.x = position.x + math.ceil(2 * right_bottom.y) / 2 + 0.5
-				end
-			end
-
-			local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
-			local poles = {}
-			for _, v in pairs(dict) do
-				table.insert(poles, v)
-			end
-
-			table.sort(poles, function(k1, k2)
-				return k1.supply_area_distance < k2.supply_area_distance
-			end)
-
-			local check = false
-			for i, pole in ipairs(poles) do
-				local names = {}
-				for i1 = i, #poles, 1 do
-					table.insert(names, poles[i1].name)
+				local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
+				local poles = {}
+				for _, v in pairs(dict) do
+					table.insert(poles, v)
 				end
 
-				local supply_area_distance = pole.supply_area_distance
+				table.sort(poles, function(k1, k2)
+					return k1.supply_area_distance < k2.supply_area_distance
+				end)
 
-				local area = {
-					left_top = {
-						position.x + left_top.x - supply_area_distance,
-						position.y + left_top.y - supply_area_distance,
-					},
-					right_bottom = {
-						position.x + right_bottom.x + supply_area_distance,
-						position.y + right_bottom.y + supply_area_distance,
-					},
-					orientation = building_direction / 4,
-				}
+				local check = false
+				for i, pole in ipairs(poles) do
+					local names = {}
+					for i1 = i, #poles, 1 do
+						table.insert(names, poles[i1].name)
+					end
 
-				local T = {
-					area = area,
-					name = names,
-				}
+					local supply_area_distance = pole.supply_area_distance
 
-				if surf.count_entities_filtered(T) > 0 then
-					check = true
-					break
+					local area = {
+						left_top = {
+							position.x + left_top.x - supply_area_distance,
+							position.y + left_top.y - supply_area_distance,
+						},
+						right_bottom = {
+							position.x + right_bottom.x + supply_area_distance,
+							position.y + right_bottom.y + supply_area_distance,
+						},
+						orientation = building_direction / 4,
+					}
+
+					local T = {
+						area = area,
+						name = names,
+					}
+
+					if surf.count_entities_filtered(T) > 0 then
+						check = true
+						break
+					end
 				end
-			end
 
-			if check then
-				result = result .. " " .. "connected"
-			else
-				result = result .. "Not Connected"
+				if check then
+					result = result .. " " .. "connected"
+				else
+					result = result .. "Not Connected"
+				end
 			end
 		end
 	else
