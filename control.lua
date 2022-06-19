@@ -303,7 +303,8 @@ function read_crafting_slot(pindex)
 end
 
 function read_inventory_slot(pindex)
-	local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
+	local inventory = players[pindex].inventory
+	local stack = inventory.lua_inventory[inventory.index]
 	if stack.valid_for_read and stack.valid then
 		printout(stack.name .. " x " .. stack.count .. " " .. stack.prototype.subgroup.name, pindex)
 	else
@@ -312,31 +313,34 @@ function read_inventory_slot(pindex)
 end
 
 function set_quick_bar(index, pindex)
-	local page = game.get_player(pindex).get_active_quick_bar_page(1) - 1
-	local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
+	local player = game.get_player(pindex)
+	local page = player.get_active_quick_bar_page(1) - 1
+	local inventory = players[pindex].inventory
+	local stack = inventory.lua_inventory[inventory.index]
 	if stack.valid_for_read and stack.valid then
-		game.get_player(pindex).set_quick_bar_slot(index + 10 * page, stack)
+		player.set_quick_bar_slot(index + 10 * page, stack)
 		printout("Assigned " .. index, pindex)
 	else
-		game.get_player(pindex).set_quick_bar_slot(index + 10 * page, nil)
+		player.set_quick_bar_slot(index + 10 * page, nil)
 		printout("Unassigned " .. index, pindex)
 	end
 end
 
 function read_quick_bar(index, pindex)
-	page = game.get_player(pindex).get_active_quick_bar_page(1) - 1
-	local item = game.get_player(pindex).get_quick_bar_slot(index + 10 * page)
+	local player = game.get_player(pindex)
+	local page = player.get_active_quick_bar_page(1) - 1
+	local item = player.get_quick_bar_slot(index + 10 * page)
 	if item ~= nil then
-		local count = game.get_player(pindex).character.get_main_inventory().get_item_count(item.name)
-		local stack = game.get_player(pindex).cursor_stack
+		local count = player.character.get_main_inventory().get_item_count(item.name)
+		local stack = player.cursor_stack
 		if stack.valid_for_read then
 			count = count + stack.count
-			printout("unselected " .. item.name .. " x " .. count, pindex)
+			printout("Unselected " .. item.name .. " x " .. count, pindex)
 		else
-			printout("selected " .. item.name .. " x " .. count, pindex)
+			printout("Selected " .. item.name .. " x " .. count, pindex)
 		end
 	else
-		printout("Empty Slot", pindex)
+		printout("Empty slot", pindex)
 	end
 end
 
