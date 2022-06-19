@@ -173,7 +173,7 @@ function read_building_slot(pindex)
 
 		printout(name .. " " .. type .. " " .. amount .. "/" .. capacity, pindex)
 	else
-		stack = sector.inventory[building.index]
+		local stack = sector.inventory[building.index]
 		if stack.valid_for_read and stack.valid then
 			printout(stack.name .. " x " .. stack.count, pindex)
 		else
@@ -248,7 +248,7 @@ end
 function read_crafting_queue(pindex)
 	local crafting_queue = players[pindex].crafting_queue
 	if crafting_queue.max ~= 0 then
-		item = crafting_queue.lua_queue[crafting_queue.index]
+		local item = crafting_queue.lua_queue[crafting_queue.index]
 		printout(item.recipe .. " x " .. item.count, pindex)
 	else
 		printout("Blank2", pindex)
@@ -349,7 +349,7 @@ function target(pindex)
 end
 
 function move_cursor_map(position, pindex)
-	player = game.get_player(pindex)
+	local player = game.get_player(pindex)
 	move_cursor(
 		(position.x - player.position.x) * players[pindex].scale + (players[pindex].resolution.width / 2),
 		(position.y - player.position.y) * players[pindex].scale + (players[pindex].resolution.height / 2),
@@ -364,16 +364,16 @@ function move_cursor(x, y, pindex)
 end
 
 function scale_stop(position, pindex)
-	player = game.get_player(pindex)
+	local player = game.get_player(pindex)
 	move_cursor(players[pindex].resolution.width / 2, players[pindex].resolution.height / 2, pindex)
-	x1 = player.position.x
-	y1 = player.position.y
-	x2 = position.x
-	y2 = position.y
-	dx = math.abs(x2 - x1)
-	dy = math.abs(y2 - y1)
-	pptx = players[pindex].resolution.width / dx / 2
-	ppty = players[pindex].resolution.height / dy / 2
+	local x1 = player.position.x
+	local y1 = player.position.y
+	local x2 = position.x
+	local y2 = position.y
+	local dx = math.abs(x2 - x1)
+	local dy = math.abs(y2 - y1)
+	local pptx = players[pindex].resolution.width / dx / 2
+	local ppty = players[pindex].resolution.height / dy / 2
 	players[pindex].scale = pptx
 	local success = true
 	if pptx > 50 or ppty > 50 then
@@ -582,7 +582,7 @@ end
 
 function rescan(pindex)
 	players[pindex].nearby.index = 1
-	first_player = game.get_player(pindex)
+	local first_player = game.get_player(pindex)
 	players[pindex].nearby.ents = scan_area(
 		math.floor(first_player.position.x) - 100,
 		math.floor(first_player.position.y) - 100,
@@ -630,8 +630,8 @@ function distance(pos1, pos2)
 	local y1 = pos1.y
 	local y2 = pos2.y
 	local dy = math.abs(y2 - y1)
-	if direction(pos1, pos2) == "North" then
-	end
+	-- if direction(pos1, pos2) == "North" then
+	-- end
 	return math.abs(math.sqrt(dx * dx + dy * dy))
 end
 
@@ -663,7 +663,7 @@ function scan_area(x, y, w, h, pindex)
 	end
 
 	for i = 1, #ents, 1 do
-		index = index_of_entity(result, ents[i].name)
+		local index = index_of_entity(result, ents[i].name)
 		if index == nil then
 			table.insert(result, { ents[i] })
 		elseif #result[index] >= 100 then
@@ -713,10 +713,10 @@ function toggle_cursor(pindex)
 end
 
 function teleport_to_cursor(pindex)
-	first_player = game.get_player(pindex)
-	can_port = first_player.surface.can_place_entity({ name = "character", position = players[pindex].cursor_pos })
+	local first_player = game.get_player(pindex)
+	local can_port = first_player.surface.can_place_entity({ name = "character", position = players[pindex].cursor_pos })
 	if can_port then
-		teleported = first_player.teleport(players[pindex].cursor_pos)
+		local teleported = first_player.teleport(players[pindex].cursor_pos)
 		if teleported then
 			read_tile(pindex)
 			players[pindex].position = table.deepcopy(players[pindex].cursor_pos)
@@ -784,7 +784,7 @@ function read_tile(pindex)
 			end
 			local dict = game.get_filtered_entity_prototypes({ { filter = "type", type = "electric-pole" } })
 			local poles = {}
-			for i, v in pairs(dict) do
+			for _, v in pairs(dict) do
 				table.insert(poles, v)
 			end
 			table.sort(poles, function(k1, k2)
@@ -792,7 +792,7 @@ function read_tile(pindex)
 			end)
 			local check = false
 			for i, pole in ipairs(poles) do
-				names = {}
+				local names = {}
 				for i1 = i, #poles, 1 do
 					table.insert(names, poles[i1].name)
 				end
@@ -1066,11 +1066,11 @@ function read_coords(pindex)
 			if #techs[players[pindex].technology.index].prerequisites < 1 then
 				result = result .. " No prior research "
 			end
-			for i, preq in pairs(techs[players[pindex].technology.index].prerequisites) do
+			for _, preq in pairs(techs[players[pindex].technology.index].prerequisites) do
 				result = result .. preq.name .. " , "
 			end
 			result = result .. " and " .. techs[players[pindex].technology.index].research_unit_count .. " x "
-			for i, ingredient in pairs(techs[players[pindex].technology.index].research_unit_ingredients) do
+			for _, ingredient in pairs(techs[players[pindex].technology.index].research_unit_ingredients) do
 				result = result .. ingredient.name .. " " .. " , "
 			end
 
@@ -1080,7 +1080,7 @@ function read_coords(pindex)
 end
 
 function initialize(player)
-	index = player.index
+	local index = player.index
 	--   player.surface.daytime = .5
 	players[index] = {
 		player = player,
@@ -1725,7 +1725,7 @@ function menu_cursor_right(pindex)
 end
 
 function move_characters(event)
-	for pindex, player in pairs(players) do
+	for _, player in pairs(players) do
 		if player.walk ~= 2 or player.cursor or player.in_menu then
 			local walk = false
 			while #player.move_queue > 0 do
@@ -1780,7 +1780,7 @@ function move(direction, pindex)
 	if players[pindex].walk == 2 then
 		return
 	end
-	first_player = game.get_player(pindex)
+	local first_player = game.get_player(pindex)
 	local pos = players[pindex].position
 	local new_pos = offset_position(pos, direction, 1)
 	if players[pindex].player_direction == direction then
@@ -1842,12 +1842,12 @@ script.on_event("cursor-right", function(event)
 end)
 
 script.on_event("read-coords", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	read_coords(pindex)
 end)
 script.on_event("jump-to-player", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		if players[pindex].cursor then
@@ -1856,7 +1856,7 @@ script.on_event("jump-to-player", function(event)
 	end
 end)
 script.on_event("teleport-to-cursor", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		teleport_to_cursor(pindex)
@@ -1864,7 +1864,7 @@ script.on_event("teleport-to-cursor", function(event)
 end)
 
 script.on_event("toggle-cursor", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		toggle_cursor(pindex)
@@ -1872,14 +1872,14 @@ script.on_event("toggle-cursor", function(event)
 end)
 
 script.on_event("rescan", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		rescan(pindex)
 	end
 end)
 script.on_event("scan-up", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		scan_up(pindex)
@@ -1887,7 +1887,7 @@ script.on_event("scan-up", function(event)
 end)
 
 script.on_event("scan-down", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		scan_down(pindex)
@@ -1895,7 +1895,7 @@ script.on_event("scan-down", function(event)
 end)
 
 script.on_event("scan-middle", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		scan_middle(pindex)
@@ -1903,7 +1903,7 @@ script.on_event("scan-middle", function(event)
 end)
 
 script.on_event("jump-to-scan", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu and players[pindex].cursor then
 		if
@@ -1964,7 +1964,7 @@ script.on_event("jump-to-scan", function(event)
 end)
 
 script.on_event("scan-category-up", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		local new_category = players[pindex].nearby.category - 1
@@ -1998,7 +1998,7 @@ script.on_event("scan-category-up", function(event)
 	end
 end)
 script.on_event("scan-category-down", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		local new_category = players[pindex].nearby.category + 1
@@ -2034,13 +2034,13 @@ script.on_event("scan-category-down", function(event)
 end)
 
 script.on_event("repeat-last-spoken", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	repeat_last_spoken(pindex)
 end)
 
 script.on_event("tile-cycle", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		tile_cycle(pindex)
@@ -2048,7 +2048,7 @@ script.on_event("tile-cycle", function(event)
 end)
 
 script.on_event("open-inventory", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[event.player_index].in_menu then
 		players[pindex].in_menu = true
@@ -2067,7 +2067,7 @@ script.on_event("open-inventory", function(event)
 					players[pindex].crafting.lua_recipes[1] = {}
 					table.insert(players[pindex].crafting.lua_recipes[1], v)
 				else
-					check = true
+					local check = true
 					for i1, cat in ipairs(players[pindex].crafting.lua_recipes) do
 						if cat[1].group.name == v.group.name then
 							check = false
@@ -2135,7 +2135,7 @@ end)
 
 for k = 1, 10 do
 	script.on_event("quickbar-" .. k, function(event)
-		pindex = event.player_index
+		local pindex = event.player_index
 		check_for_player(pindex)
 		if not players[pindex].in_menu then
 			read_quick_bar(k, pindex)
@@ -2143,7 +2143,7 @@ for k = 1, 10 do
 	end)
 
 	script.on_event("set-quickbar-" .. k, function(event)
-		pindex = event.player_index
+		local pindex = event.player_index
 		check_for_player(pindex)
 		if players[pindex].menu == "inventory" then
 			set_quick_bar(k, pindex)
@@ -2152,7 +2152,7 @@ for k = 1, 10 do
 end
 
 script.on_event("switch-menu", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "building" then
@@ -2222,7 +2222,7 @@ script.on_event("switch-menu", function(event)
 end)
 
 script.on_event("reverse-switch-menu", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "building" then
@@ -2274,7 +2274,7 @@ script.on_event("reverse-switch-menu", function(event)
 end)
 
 script.on_event("mine-access", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 
 	if not players[event.player_index].in_menu then
@@ -2283,7 +2283,7 @@ script.on_event("mine-access", function(event)
 end)
 
 script.on_event("left-click", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 
 	if players[pindex].in_menu then
@@ -2550,6 +2550,7 @@ script.on_event("left-click", function(event)
 
 					return
 				end
+
 				--            target(pindex)
 				if ent.prototype.ingredient_count ~= nil then
 					players[pindex].building.recipe = ent.get_recipe()
@@ -2560,10 +2561,12 @@ script.on_event("left-click", function(event)
 					players[pindex].building.recipe_list = nil
 					players[pindex].building.category = 0
 				end
+
 				players[pindex].inventory.lua_inventory = game.get_player(pindex).get_main_inventory()
 				players[pindex].inventory.max = #players[pindex].inventory.lua_inventory
 				players[pindex].building.sectors = {}
 				players[pindex].building.sector = 1
+
 				if ent.get_output_inventory() ~= nil then
 					table.insert(players[pindex].building.sectors, {
 						name = "Output",
@@ -2638,7 +2641,7 @@ script.on_event("left-click", function(event)
 	end
 end)
 script.on_event("shift-click", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "crafting" then
@@ -2714,7 +2717,7 @@ script.on_event("shift-click", function(event)
 end)
 
 script.on_event("right-click", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "crafting" then
@@ -2768,7 +2771,7 @@ script.on_event("right-click", function(event)
 end)
 
 script.on_event("rotate-building", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if not players[pindex].in_menu then
 		local stack = game.get_player(pindex).cursor_stack
@@ -2827,13 +2830,13 @@ script.on_event("rotate-building", function(event)
 end)
 
 script.on_event("item-info", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "inventory" then
 			local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
 			if stack.valid_for_read and stack.valid then
-				dimensions = get_tile_dimensions(stack.prototype)
+				local dimensions = get_tile_dimensions(stack.prototype)
 				script.on_event(defines.events.on_string_translated, function(event1)
 					if event1.player_index == pindex then
 						printout(dimensions .. " " .. event1.result, pindex)
@@ -2873,7 +2876,7 @@ script.on_event("item-info", function(event)
 end)
 
 script.on_event("time", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	local surf = game.get_player(pindex).surface
 	local hour = math.floor(24 * surf.daytime)
@@ -2899,7 +2902,7 @@ script.on_event("time", function(event)
 end)
 
 script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	local stack = game.get_player(pindex).cursor_stack
 	if not stack.valid_for_read then
@@ -2919,7 +2922,7 @@ script.on_event(defines.events.on_cutscene_cancelled, function(event)
 end)
 
 script.on_event(defines.events.on_gui_closed, function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	--   rescan(pindex)
 	if players[pindex].in_menu then
@@ -2929,21 +2932,21 @@ script.on_event(defines.events.on_gui_closed, function(event)
 end)
 
 script.on_event("save", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	game.auto_save("manual")
 	printout("Saving Game, please do not quit yet", pindex)
 end)
 
-walk_type_speech = {
-	"Telestep enabled",
-	"Step by walk enabled",
-	"Walking smoothly enabled",
-}
-
 script.on_event("toggle-walk", function(event)
-	pindex = event.player_index
+	local pindex = event.player_index
 	check_for_player(pindex)
 	players[pindex].walk = (players[pindex].walk + 1) % 3
+
+	local walk_type_speech = {
+		"Telestep enabled",
+		"Step by walk enabled",
+		"Walking smoothly enabled",
+	}
 	printout(walk_type_speech[players[pindex].walk + 1], pindex)
 end)
