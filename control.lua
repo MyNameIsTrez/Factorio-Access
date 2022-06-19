@@ -32,15 +32,18 @@ function get_power_string(power)
 end
 
 function get_adjacent_source(box, pos, dir)
-	local result = { position = pos, direction = "" }
-	ebox = box
+	local ebox = box
+
 	if dir == 1 or dir == 3 then
 		ebox.left_top.x = box.left_top.y
 		ebox.left_top.y = box.left_top.x
 		ebox.right_bottom.x = box.right_bottom.y
 		ebox.right_bottom.y = box.right_bottom.x
 	end
+
 	print(ebox.left_top.x .. " " .. ebox.left_top.y)
+
+	local result = { position = pos, direction = "" }
 	if pos.x < ebox.left_top.x then
 		result.position.x = result.position.x + 1
 		result.direction = "West"
@@ -54,21 +57,24 @@ function get_adjacent_source(box, pos, dir)
 		result.position.y = result.position.y - 1
 		result.direction = "South"
 	end
+
 	return result
 end
 
 function read_technology_slot(pindex)
+	local technology = players[pindex].technology
+	local category = technology.category
 	local techs = {}
-	if players[pindex].technology.category == 1 then
-		techs = players[pindex].technology.lua_researchable
-	elseif players[pindex].technology.category == 2 then
-		techs = players[pindex].technology.lua_locked
-	elseif players[pindex].technology.category == 3 then
-		techs = players[pindex].technology.lua_unlocked
+	if category == 1 then
+		techs = technology.lua_researchable
+	elseif category == 2 then
+		techs = technology.lua_locked
+	elseif category == 3 then
+		techs = technology.lua_unlocked
 	end
 
-	if next(techs) ~= nil and players[pindex].technology.index > 0 and players[pindex].technology.index <= #techs then
-		local tech = techs[players[pindex].technology.index]
+	if next(techs) ~= nil and technology.index > 0 and technology.index <= #techs then
+		local tech = techs[technology.index]
 		if tech.valid then
 			printout(tech.name, pindex)
 		else

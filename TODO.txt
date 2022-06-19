@@ -1,2 +1,5 @@
-BUGS:
+# BUGS
 When a game is loaded where the inventory was left open, the mod doesn't realize the inventory is open and will move the player with WASD.
+
+# REFACTORING
+Replace most uses of pindex with player variable.
