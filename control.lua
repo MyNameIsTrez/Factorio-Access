@@ -1,6 +1,9 @@
-players = {}
-layouts = {}
-layouts["burner-mining-drill"] = { input = nil, output = nil }
+local players = {}
+
+local layouts = {
+	["burner-mining-drill"] = { input = nil, output = nil },
+}
+
 local util = require("util")
 
 print(
@@ -109,14 +112,16 @@ function populate_categories(pindex)
 end
 
 function read_belt_slot(pindex)
+	local belt = players[pindex].belt
 	local stack
-	if players[pindex].belt.sector == 1 then
-		stack = players[pindex].belt.line1[players[pindex].belt.index]
-	elseif players[pindex].belt.sector == 2 then
-		stack = players[pindex].belt.line2[players[pindex].belt.index]
+	if belt.sector == 1 then
+		stack = belt.line1[belt.index]
+	elseif belt.sector == 2 then
+		stack = belt.line2[belt.index]
 	else
 		return
 	end
+
 	if stack.valid_for_read and stack.valid then
 		printout(stack.name .. " x " .. stack.count, pindex)
 	else
@@ -129,9 +134,10 @@ function reset_rotation(pindex)
 end
 
 function read_building_recipe(pindex)
-	if players[pindex].building.recipe_selection then
-		recipe = players[pindex].building.recipe_list[players[pindex].building.category][players[pindex].building.index]
-		if recipe.valid == true then
+	local building = players[pindex].building
+	if building.recipe_selection then
+		local recipe = building.recipe_list[building.category][building.index]
+		if recipe.valid then
 			printout(
 				recipe.name .. " " .. recipe.category .. " " .. recipe.group.name .. " " .. recipe.subgroup.name,
 				pindex
@@ -140,7 +146,7 @@ function read_building_recipe(pindex)
 			printout("Blank1", pindex)
 		end
 	else
-		local recipe = players[pindex].building.recipe
+		local recipe = building.recipe
 		if recipe ~= nil then
 			printout(recipe.name, pindex)
 		else
@@ -271,7 +277,7 @@ end
 
 function read_crafting_slot(pindex)
 	recipe = players[pindex].crafting.lua_recipes[players[pindex].crafting.category][players[pindex].crafting.index]
-	if recipe.valid == true then
+	if recipe.valid then
 		if recipe.category == "smelting" then
 			printout(recipe.name .. " can only be crafted by a furnace.", pindex)
 		else
@@ -293,7 +299,7 @@ end
 
 function read_inventory_slot(pindex)
 	local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
-	if stack.valid_for_read and stack.valid == true then
+	if stack.valid_for_read and stack.valid then
 		printout(stack.name .. " x " .. stack.count .. " " .. stack.prototype.subgroup.name, pindex)
 	else
 		printout("Empty Slot", pindex)
@@ -303,7 +309,7 @@ end
 function set_quick_bar(index, pindex)
 	local page = game.get_player(pindex).get_active_quick_bar_page(1) - 1
 	local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
-	if stack.valid_for_read and stack.valid == true then
+	if stack.valid_for_read and stack.valid then
 		game.get_player(pindex).set_quick_bar_slot(index + 10 * page, stack)
 		printout("Assigned " .. index, pindex)
 	else
@@ -459,7 +465,7 @@ function scan_index(pindex)
 				return distance(pos, k1.position) < distance(pos, k2.position)
 			end)
 			ent = ents[players[pindex].nearby.index][1]
-			while ent.valid ~= true do
+			while not ent.valid do
 				table.remove(ents[players[pindex].nearby.index], 1)
 				ent = ents[players[pindex].nearby.index][1]
 			end
@@ -967,10 +973,7 @@ function read_tile(pindex)
 				result = result .. string.format(" %.3f Watts", power)
 			end
 		end
-		if
-			ent.prototype.electric_energy_source_prototype ~= nil
-			and ent.is_connected_to_electric_network() == false
-		then
+		if ent.prototype.electric_energy_source_prototype ~= nil and not ent.is_connected_to_electric_network() then
 			result = result .. "Not Connected"
 		end
 		if ent.drop_position ~= nil then
@@ -1922,7 +1925,7 @@ script.on_event("jump-to-scan", function(event)
 					return distance(pos, k1.position) < distance(pos, k2.position)
 				end)
 				ent = ents[players[pindex].nearby.index][1]
-				while ent.valid ~= true do
+				while not ent.valid do
 					table.remove(ents[players[pindex].nearby.index], 1)
 					ent = ents[players[pindex].nearby.index][1]
 				end
@@ -2820,7 +2823,7 @@ script.on_event("item-info", function(event)
 	if players[pindex].in_menu then
 		if players[pindex].menu == "inventory" then
 			local stack = players[pindex].inventory.lua_inventory[players[pindex].inventory.index]
-			if stack.valid_for_read and stack.valid == true then
+			if stack.valid_for_read and stack.valid then
 				dimensions = get_tile_dimensions(stack.prototype)
 				script.on_event(defines.events.on_string_translated, function(event1)
 					if event1.player_index == pindex then
@@ -2910,7 +2913,7 @@ script.on_event(defines.events.on_gui_closed, function(event)
 	pindex = event.player_index
 	check_for_player(pindex)
 	--   rescan(pindex)
-	if players[pindex].in_menu == true then
+	if players[pindex].in_menu then
 		players[pindex].in_menu = false
 		players[pindex].menu = "none"
 	end
